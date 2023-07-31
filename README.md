@@ -7,7 +7,7 @@ To use Shredder, follow these steps:
 1. Clone the repository:
 
 ```sh
-git clone https://github.com/your_username/Shredder.git
+git clone https://github.com/LUCKYONE-CC/Shredder.git
 ```
 
 2. Navigate to the project directory:
