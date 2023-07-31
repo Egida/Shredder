@@ -10,7 +10,7 @@ namespace Shredder
 {
     public class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.WriteLine("Enter the IP to Shred:");
             string ip = GetUserInput();
@@ -68,12 +68,15 @@ namespace Shredder
 
             try
             {
-                shred.FloodAsync().Wait();
+                Task infoTask = Task.Run(() => shred.Info());
+                Task floodTask = shred.FloodAsync();
+
+                await Task.WhenAll(infoTask, floodTask);
             }
             catch
             {
                 shred.Stop();
-                Error("A fatal error has occurred and the attack was stopped.");
+                Error("Ein schwerwiegender Fehler ist aufgetreten und der Angriff wurde gestoppt.");
             }
 
             try

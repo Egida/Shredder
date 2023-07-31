@@ -19,6 +19,7 @@ namespace Shredder
         public double Total { get { return _total; } }
 
         private readonly object _lock = new object();
+        private static readonly object _consoleLock = new object();
 
         public Shred(string ip, int port, int force, int threads)
         {
@@ -42,7 +43,7 @@ namespace Shredder
             await Task.Run(Info);
         }
 
-        private void Info()
+        public void Info()
         {
             double interval = 0.05;
             double now = GetTime();
@@ -64,9 +65,10 @@ namespace Shredder
 
                 if (size != 0)
                 {
-                    lock (_lock)
+                    _total += _sent * bytediff / gb * interval;
+
+                    lock (_consoleLock)
                     {
-                        _total += _sent * bytediff / gb * interval;
                         Console.Write($"\r{Stage($"{(int)Math.Round(Convert.ToDecimal(size))} Mb/s - Total: {Math.Round(_total, 1)} Gb.")}");
                     }
                 }
@@ -78,15 +80,14 @@ namespace Shredder
                     continue;
                 }
 
-                lock (_lock)
-                {
-                    size = (int)Math.Round(_sent * bytediff / mb);
-                    _sent = 0;
-                }
+                size = (int)Math.Round(_sent * bytediff / mb);
+                _sent = 0;
 
                 now += 1;
             }
         }
+
+
 
         public void Stop()
         {
