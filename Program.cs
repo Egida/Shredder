@@ -68,7 +68,7 @@ namespace Shredder
 
             try
             {
-                shred.Flood();
+                shred.FloodAsync().Wait();
             }
             catch
             {
