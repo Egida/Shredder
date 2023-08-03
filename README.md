@@ -58,4 +58,4 @@ The method called by each thread to send UDP packets to the target IP address an
 - `static double GetTime()`: Returns the current time in seconds.
 
 ## Disclaimer 
-Remember, using this tool for malicious purposes or on unauthorized networks is illegal and unethical. Always obtain proper authorization before using it for testing or educational purposes.
+Remember, using this tool for malicious purposes or on unauthorized networks is illegal and unethical. Always obtain proper authorization before using it for testing or educational purposes. :)
