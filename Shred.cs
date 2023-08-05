@@ -35,8 +35,7 @@ namespace Shredder
             _on = true;
             _sent = 0;
 
-            await Task.Run(SendLoop);
-            await Task.Run(Info);
+            await SendLoop();
         }
 
         private async Task SendLoop()
