@@ -1,3 +1,4 @@
+[![CodeFactor](https://www.codefactor.io/repository/github/luckyone-cc/shredder/badge)](https://www.codefactor.io/repository/github/luckyone-cc/shredder)
 # Shredder - UDP Flooding Tool
 Shredder is a simple UDP flooding tool implemented in C# that allows you to perform UDP flood attacks on a specified IP address and port. This tool can be useful for testing the resilience of network infrastructure against UDP flood attacks or for educational purposes to understand the impact of such attacks. Please use this tool responsibly and only on networks that you have permission to test.
 
